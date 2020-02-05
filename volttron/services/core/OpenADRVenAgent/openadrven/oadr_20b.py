@@ -7150,7 +7150,7 @@ class EiTargetType(GeneratedsSuper):
 class eiEventSignalType(GeneratedsSuper):
     subclass = None
     superclass = None
-    def __init__(self, intervals=None, eiTarget=None, signalName=None, signalType=None, signalID=None, itemBase=None, currentValue=None):
+    def __init__(self, intervals=None, eiTarget=None, signalName=None, signalType=None, signalID=None, itemBase=None, currentValue=None, currencyPerKWh=None):
         self.original_tagname_ = None
         self.intervals = intervals
         self.eiTarget = eiTarget
@@ -7159,6 +7159,7 @@ class eiEventSignalType(GeneratedsSuper):
         self.signalID = signalID
         self.itemBase = itemBase
         self.currentValue = currentValue
+        self.currencyPerKWh = currencyPerKWh
     def factory(*args_, **kwargs_):
         if CurrentSubclassModule_ is not None:
             subclass = getSubclassFromModule_(
@@ -7315,7 +7316,7 @@ class eiEventSignalType(GeneratedsSuper):
         elif nodeName_ == 'currencyPerKWh':
             obj_ = currencyType.factory()
             obj_.build(child_)
-            self.itemBase = obj_
+            self.currencyPerKWh = obj_
             obj_.original_tagname_ = 'currencyPerKWh'
         elif nodeName_ == 'currencyPerKW':
             obj_ = currencyType.factory()

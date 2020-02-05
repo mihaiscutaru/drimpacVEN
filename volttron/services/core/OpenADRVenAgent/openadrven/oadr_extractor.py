@@ -214,15 +214,12 @@ class OadrEventExtractor(OadrExtractor):
     @staticmethod
     def extract_signal(signal):
         """Extract a signal from the received eiEvent."""
-        if signal.signalName.lower() != 'simple':
-            raise OpenADRInterfaceException('Received a non-simple event signal; not supported by this VEN.', OADR_BAD_SIGNAL)
-        if signal.signalType.lower() != 'level':
+        if signal.signalName.lower() == 'simple' and signal.signalType.lower() == 'level':
             # OADR rule 116: If signalName = simple, signalType = level.
             # Disabling this validation since the EPRI VTN server sometimes sends type "delta" for simple signals.
             # error_msg = 'Simple signalType must be level; = {}'.format(signal.signalType)
             # raise OpenADRInterfaceException(error_msg, OADR_BAD_SIGNAL)
-            pass
-        return {
+            return {
             'signalID': signal.signalID,
             'currentLevel': int(signal.currentValue.payloadFloat.value) if signal.currentValue else None,
             'intervals': {
@@ -231,7 +228,32 @@ class OadrEventExtractor(OadrExtractor):
                     'duration': interval.duration.duration,
                     'payloads': {'level': int(payload.payloadBase.value) for payload in interval.streamPayloadBase}
                 } for i, interval in enumerate(signal.intervals.interval)}
-        }
+            }
+        elif signal.signalName.lower() == 'electricity_price' and signal.signalType.lower() == 'price':
+            return {
+            'signalID': signal.signalID,
+            'currentLevel': int(signal.currentValue.payloadFloat.value) if signal.currentValue else None,
+            'currencyPerKWh': signal.currencyPerKWh.itemUnits if signal.currencyPerKWh else None,
+            'intervals': {
+                interval.uid if interval.uid and interval.uid.strip() else str(i): {
+                    'uid': interval.uid if interval.uid and interval.uid.strip() else str(i),
+                    'duration': interval.duration.duration,
+                    'payloads': {'level': int(payload.payloadBase.value) for payload in interval.streamPayloadBase}
+                } for i, interval in enumerate(signal.intervals.interval)}
+            }
+        elif signal.signalName.lower() == 'load_dispatch' and signal.signalType.lower() == 'delta':
+            return {
+            'signalID': signal.signalID,
+            'currentLevel': int(signal.currentValue.payloadFloat.value) if signal.currentValue else None,
+            'intervals': {
+                interval.uid if interval.uid and interval.uid.strip() else str(i): {
+                    'uid': interval.uid if interval.uid and interval.uid.strip() else str(i),
+                    'duration': interval.duration.duration,
+                    'payloads': {'level': int(payload.payloadBase.value) for payload in interval.streamPayloadBase}
+                } for i, interval in enumerate(signal.intervals.interval)}
+            }
+        else:
+            raise OpenADRInterfaceException('Received an event signal, not supported by this VEN.', OADR_BAD_SIGNAL)
 
 
 class OadrReportExtractor(OadrExtractor):
