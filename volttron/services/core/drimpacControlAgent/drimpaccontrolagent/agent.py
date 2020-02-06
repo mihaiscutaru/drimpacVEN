@@ -41,18 +41,12 @@ def drimpac_control_agent(config_path, **kwargs):
     report_interval_secs = config.get('report_interval_secs')
     baseline_power_kw = config.get('baseline_power_kw')
     sine_period_secs = config.get('sine_period_secs')
-    return ControlAgentSim(venagent_id, opt_type, report_interval_secs, baseline_power_kw, sine_period_secs, **kwargs)
+    return DrimpacControlAgent(venagent_id, opt_type, report_interval_secs, baseline_power_kw, sine_period_secs, **kwargs)
 
-
-class ControlAgentSim(Agent):
-    """
-        This is a sample ControlAgent for use while demonstrating and testing OpenADRVenAgent.
-        It exercises the VEN agent's exposed RPC methods, and consumes messages published by
-        OpenADRVenAgent.
-    """
+class DrimpacControlAgent(Agent):
 
     def __init__(self, venagent_id, opt_type, report_interval_secs, baseline_power_kw, sine_period_secs, **kwargs):
-        super(ControlAgentSim, self).__init__(**kwargs)
+        super(DrimpacControlAgent, self).__init__(**kwargs)
         self.venagent_id = None
         self.default_opt_type = None
         self.report_interval_secs = None
