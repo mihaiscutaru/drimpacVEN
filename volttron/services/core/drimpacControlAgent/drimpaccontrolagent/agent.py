@@ -140,6 +140,14 @@ class ControlAgentSim(Agent):
                                'start_time': start_time.__str__(),
                                'end_time': end_time.__str__()})
 
+    def handle_electricity_price(self, signalJson):
+        _log.debug("TODO: implement electricity price handling")
+        _log.debug(signalJson)
+
+    def handle_load_dispatch(self, signalJson):
+        _log.debug("TODO: implement load dispatch handling")
+        _log.debug(signalJson)
+
     def receive_event(self, peer, sender, bus, topic, headers, message):
         """(Subscription callback) Receive a list of active events as JSON."""
         debug_string = 'Received event: ID={}, status={}, start={}, end={}, opt_type={}, all params={}'
@@ -149,6 +157,14 @@ class ControlAgentSim(Agent):
                                        message['end_time'],
                                        message['opt_type'],
                                        message))
+
+        signals = json.loads(message['signals'])
+        for s in signals:
+            if signals[s]['signalName'].lower() == 'electricity_price':
+                self.handle_electricity_price(signals[s])
+            elif signals[s]['signalName'].lower() == 'load_dispatch':
+                self.handle_load_dispatch(signals[s])
+
         if message['opt_type'] != self.default_opt_type:
             # Send an optIn decision to the VENAgent.
             self.respond_to_event(message['event_id'], self.default_opt_type)

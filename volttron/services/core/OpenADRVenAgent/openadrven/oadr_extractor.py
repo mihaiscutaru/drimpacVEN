@@ -220,6 +220,8 @@ class OadrEventExtractor(OadrExtractor):
             # error_msg = 'Simple signalType must be level; = {}'.format(signal.signalType)
             # raise OpenADRInterfaceException(error_msg, OADR_BAD_SIGNAL)
             return {
+            'signalName':  signal.signalName,
+            'signalType': signal.signalType,
             'signalID': signal.signalID,
             'currentLevel': int(signal.currentValue.payloadFloat.value) if signal.currentValue else None,
             'intervals': {
@@ -229,11 +231,12 @@ class OadrEventExtractor(OadrExtractor):
                     'payloads': {'level': int(payload.payloadBase.value) for payload in interval.streamPayloadBase}
                 } for i, interval in enumerate(signal.intervals.interval)}
             }
-        elif signal.signalName.lower() == 'electricity_price' and signal.signalType.lower() == 'price':
-            return {
+        elif signal.signalName.lower() == 'electricity_price':
+            parsed_signal = {
+            'signalName':  signal.signalName,
+            'signalType': signal.signalType,
             'signalID': signal.signalID,
             'currentLevel': int(signal.currentValue.payloadFloat.value) if signal.currentValue else None,
-            'currencyPerKWh': signal.currencyPerKWh.itemUnits if signal.currencyPerKWh else None,
             'intervals': {
                 interval.uid if interval.uid and interval.uid.strip() else str(i): {
                     'uid': interval.uid if interval.uid and interval.uid.strip() else str(i),
@@ -241,8 +244,13 @@ class OadrEventExtractor(OadrExtractor):
                     'payloads': {'level': int(payload.payloadBase.value) for payload in interval.streamPayloadBase}
                 } for i, interval in enumerate(signal.intervals.interval)}
             }
-        elif signal.signalName.lower() == 'load_dispatch' and signal.signalType.lower() == 'delta':
+            if signal.signalType.lower() != 'pricemultiplier':
+                parsed_signal['currencyPerKWh'] = signal.currencyPerKWh.itemUnits if signal.currencyPerKWh else None
+            return parsed_signal
+        elif signal.signalName.lower() == 'load_dispatch':
             return {
+            'signalName':  signal.signalName,
+            'signalType': signal.signalType,
             'signalID': signal.signalID,
             'currentLevel': int(signal.currentValue.payloadFloat.value) if signal.currentValue else None,
             'intervals': {
