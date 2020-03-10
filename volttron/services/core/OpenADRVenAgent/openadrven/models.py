@@ -283,18 +283,20 @@ class EiTelemetryValues(ORMBase):
     report_request_id = Column(String)
     baseline_power_kw = Column(Float)
     current_power_kw = Column(Float)
+    battery_voltage_v = Column(Float)
     iso_start_time = Column(String)                  # ISO 8601 timestamp in UTC
     iso_end_time = Column(String)                    # ISO 8601 timestamp in UTC
 
-    attribute_names = ['created_on', 'report_request_id', 'baseline_power_kw', 'current_power_kw',
+    attribute_names = ['created_on', 'report_request_id', 'baseline_power_kw', 'current_power_kw','battery_voltage_v'
                        'start_time', 'end_time']
 
     def __init__(self, report_request_id=None,
-                 baseline_power_kw=None, current_power_kw=None,
+                 baseline_power_kw=None, current_power_kw=None, battery_voltage_v=None,
                  start_time=None, end_time=None):
         self.created_on = utils.get_aware_utc_now()
         self.report_request_id = report_request_id
         self.baseline_power_kw = baseline_power_kw
+        self.battery_voltage_v = battery_voltage_v
         self.current_power_kw = current_power_kw
         self.start_time = start_time
         self.end_time = end_time
@@ -305,6 +307,7 @@ class EiTelemetryValues(ORMBase):
         my_str += 'created_on:{}; '.format(self.created_on)
         my_str += 'report_request_id:{}; '.format(self.report_request_id)
         my_str += 'baseline_power_kw:{}; '.format(self.baseline_power_kw)
+        my_str += 'battery_voltage_v:{}; '.format(self.battery_voltage_v)
         my_str += 'current_power_kw:{} '.format(self.current_power_kw)
         my_str += 'start_time:{} '.format(self.start_time)
         my_str += 'end_time:{} '.format(self.end_time)
@@ -333,6 +336,7 @@ class EiTelemetryValues(ORMBase):
         telemetry_values.report_request_id = '123'
         telemetry_values.baseline_power_kw = 37.1
         telemetry_values.current_power_kw = 272.3
+        telemetry_values.battery_voltage_v = 100
         return telemetry_values
 
     def as_json_compatible_object(self):
@@ -344,6 +348,9 @@ class EiTelemetryValues(ORMBase):
 
     def get_current_power(self):
         return self.current_power_kw
+    
+    def get_battery_voltage(self):
+        return self.battery_voltage_v
 
     def get_duration(self):
         return self.end_time - self.start_time

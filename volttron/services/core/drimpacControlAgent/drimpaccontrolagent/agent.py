@@ -9,6 +9,7 @@ import json
 import logging
 import numpy
 import sys
+import requests
 
 from volttron.platform.agent import utils
 from volttron.platform.vip.agent import Agent, Core, RPC
@@ -129,8 +130,11 @@ class DrimpacControlAgent(Agent):
         val = sine_wave(end_time, self.sine_period_secs)
         # Adjust the sine wave upward so that all values are positive, with amplitude = self.baseline_power_kw.
         measurement_kw = self.baseline_power_kw * ((val + 1) / 2)
+        r = requests.get('http://localhost:9201/drimpac-der-manager/rest/api/v1/IEC61850_to_openADR')
+        measurement_volt = r.json()['telemetry']['Vol']
         self.report_telemetry({'baseline_power_kw': str(self.baseline_power_kw),
                                'current_power_kw': str(measurement_kw),
+                               'battery_voltage_v': str(measurement_volt),
                                'start_time': start_time.__str__(),
                                'end_time': end_time.__str__()})
 
@@ -151,13 +155,15 @@ class DrimpacControlAgent(Agent):
                                        message['end_time'],
                                        message['opt_type'],
                                        message))
-
+        
         signals = json.loads(message['signals'])
         for s in signals:
             if signals[s]['signalName'].lower() == 'electricity_price':
                 self.handle_electricity_price(signals[s])
             elif signals[s]['signalName'].lower() == 'load_dispatch':
                 self.handle_load_dispatch(signals[s])
+            else:
+                continue
 
         if message['opt_type'] != self.default_opt_type:
             # Send an optIn decision to the VENAgent.
@@ -166,6 +172,7 @@ class DrimpacControlAgent(Agent):
     def receive_status(self, peer, sender, bus, topic, headers, message):
         """(Subscription callback) Receive a list of report parameters as JSON."""
         debug_string = 'Received report parameters: request_id={}, status={}, start={}, end={}, all params={}'
+        message = json.loads(message)
         _log.debug(debug_string.format(message['report_request_id'],
                                        message['status'],
                                        message['start_time'],

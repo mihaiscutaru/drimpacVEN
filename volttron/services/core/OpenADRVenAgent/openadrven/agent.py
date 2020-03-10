@@ -1287,7 +1287,7 @@ class OpenADRVenAgent(Agent):
     # ***************** VOLTTRON RPCs ********************
 
     @RPC.export
-    def respond_to_event(self, event_id, opt_in_choice=None):
+    def respond_to_event(self, event_id, opt_in_choice="OptIn"):
         """
             Respond to an event, opting in or opting out.
 
@@ -1382,6 +1382,7 @@ class OpenADRVenAgent(Agent):
             {
                 'baseline_power_kw': '15.2',
                 'current_power_kw': '371.1',
+                'battery_voltage_v': '100',
                 'start_time': '2017-11-21T23:41:46.051405',
                 'end_time': '2017-11-21T23:42:45.951405'
             }
@@ -1390,12 +1391,14 @@ class OpenADRVenAgent(Agent):
         """
         _log.debug('RPC report_telemetry: {}'.format(telemetry))
         baseline_power_kw = telemetry.get('baseline_power_kw')
+        battery_voltage_v = telemetry.get('battery_voltage_v')
         current_power_kw = telemetry.get('current_power_kw')
         start_time = utils.parse_timestamp_string(telemetry.get('start_time'))
         end_time = utils.parse_timestamp_string(telemetry.get('end_time'))
         for report in self.active_reports():
             self.add_telemetry(EiTelemetryValues(report_request_id=report.report_request_id,
                                                  baseline_power_kw=baseline_power_kw,
+                                                 battery_voltage_v=battery_voltage_v,
                                                  current_power_kw=current_power_kw,
                                                  start_time=start_time,
                                                  end_time=end_time))
@@ -1459,7 +1462,7 @@ class OpenADRVenAgent(Agent):
                         "reading_type": "Direct Read",
                         "units": "powerReal",
                         "method_name": "get_baseline_power"
-                    }
+                    },
                     "current_power_kw": {
                         "r_id": "actual_power",
                         "min_frequency": "30",
@@ -1468,7 +1471,16 @@ class OpenADRVenAgent(Agent):
                         "reading_type": "Direct Read",
                         "units": "powerReal",
                         "method_name": "get_current_power"
-                    }
+                    },
+                    "battery_voltage_v": {
+                    "r_id": "actual_power",
+                    "report_type": "reading",
+                    "reading_type": "Direct Read",
+                    "units": "voltage",
+                    "method_name": "get_battery_voltage",
+                    "min_frequency": 30,
+                    "max_frequency": 60
+                    },
                     "manual_override": "False",
                     "report_status": "active",
                     "online": "False",

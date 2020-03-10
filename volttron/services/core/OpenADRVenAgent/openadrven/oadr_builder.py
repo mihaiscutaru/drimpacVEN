@@ -138,7 +138,7 @@ class OadrCreatedEventBuilder(OadrBuilder):
                                                     responseDescription=self.error_message,
                                                     requestID=self.event.request_id,
                                                     qualifiedEventID=qualified_event_id,
-                                                    optType=self.event.opt_type)
+                                                    optType="OptIn")
         # OADR rule 25, 35: eventResponses is required except when eiResponse indicates failure.
         event_responses = oadr_20b.eventResponses()
         event_responses.add_eventResponse(event_response)
